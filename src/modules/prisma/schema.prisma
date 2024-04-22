@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id                                String          @id @unique @default(uuid())
+  role                              String          @default("admin") @db.VarChar
+  email                             String
+  password                          String
+  name                              String
+  token_forgot_password             String?
+  token_forgot_password_expiry_date DateTime?       @db.Timestamp(6)
+  updatedAt                         DateTime?       @updatedAt @db.Timestamp(6)
+  createdAt                         DateTime?       @default(now()) @db.Timestamp(6)
+  cart                              cart[]
+  cart_item                         cart_item[]
+  delivery_info                     delivery_info[]
+  order                             order[]
+}
+
+model category {
+  id        String    @id @unique @default(uuid())
+  name      String
+  updatedAt DateTime? @updatedAt @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  product   product[]
+}
+
+model product {
+  id          String      @id @unique @default(uuid())
+  name        String
+  description String?
+  price       Float?      @db.DoublePrecision
+  categoryId  String
+  category    category    @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  updatedAt   DateTime?   @updatedAt @db.Timestamp(6)
+  createdAt   DateTime?   @default(now()) @db.Timestamp(6)
+  cart_item   cart_item[]
+}
+
+model cart {
+  id        String    @id @unique @default(uuid())
+  userId    String
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  updatedAt DateTime? @updatedAt @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model cart_item {
+  id        String    @id @unique @default(uuid())
+  productId String
+  product   product   @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  userId    String
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  updatedAt DateTime? @updatedAt @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model delivery_info {
+  id        String    @id @unique @default(uuid())
+  userId    String
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  address   String
+  phone     String?
+  updatedAt DateTime? @updatedAt @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  order     order[]
+}
+
+model order {
+  id             String        @id @unique @default(uuid())
+  userId         String
+  user           user          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  deliveryInfoId String
+  delivery_info  delivery_info @relation(fields: [deliveryInfoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status         Int           @default(0)
+  updatedAt      DateTime?     @updatedAt @db.Timestamp(6)
+  createdAt      DateTime?     @default(now()) @db.Timestamp(6)
+}

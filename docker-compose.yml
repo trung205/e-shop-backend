@@ -1,0 +1,35 @@
+version: '3.5'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - e_shop
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e-shop-backend
+    environment:
+      - PORT=${PORT}
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+    networks:
+      - e_shop
+
+networks:
+  e_shop: 
+    driver: bridge
